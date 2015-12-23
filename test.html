@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<script src="jquery-2.1.4.js" type="text/javascript" charset="utf-8"></script>
+	</head>
+	<body>
+		<div id="div1">999</div>
+		<div id="div2">888</div>
+		<script>
+			var obj = {};
+			var ret = Object.defineProperty(obj,0,{
+					get: function(){
+						return 'lllll';
+					}
+				}
+			);
+			alert(obj[0]);
+		</script>
+	</body>
+</html>
