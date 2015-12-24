@@ -241,6 +241,7 @@ jQuery.extend = jQuery.fn.extend = function() {
 
 jQuery.extend({
 	// Unique for each copy of jQuery on the page
+	//每次页面加载jquery都会给jQuery生成唯一的expando属性
 	expando: "jQuery" + ( version + Math.random() ).replace( /\D/g, "" ),
 
 	// Assume jQuery is ready without the ready module
@@ -289,6 +290,7 @@ jQuery.extend({
 		return true;
 	},
 
+	//判断对象是否为空对象
 	isEmptyObject: function( obj ) {
 		var name;
 		for ( name in obj ) {
@@ -3520,6 +3522,8 @@ var access = jQuery.access = function( elems, fn, key, value, chainable, emptyGe
 /**
  * Determines whether an object can have data
  */
+//用来决定对象owner是否能够通过data()方法来绑定数据，能够绑定数据的对象包括ELEMENT_NODE,DOCUMENT_NODE
+//以及一般对象
 jQuery.acceptData = function( owner ) {
 	// Accepts only:
 	//  - Node
@@ -3536,39 +3540,43 @@ function Data() {
 	// Support: Android<4,
 	// Old WebKit does not have Object.preventExtensions/freeze method,
 	// return new empty object instead with no [[set]] accessor
-	Object.defineProperty( this.cache = {}, 0, {	//给
+	Object.defineProperty( this.cache = {}, 0, {	//给新创建的对象设置cache属性，用作缓存,并且使cache[0]指向一个空对象
 		get: function() {
 			return {};
 		}
 	});
 
-	this.expando = jQuery.expando + Data.uid++;
+	this.expando = jQuery.expando + Data.uid++;	//给新创建的对象设置expando属性,其中expando用于标志jQuery，uid用于标志data_user的id,所以expando用于标志Data对象的id
 }
 
 Data.uid = 1;
-Data.accepts = jQuery.acceptData;
+Data.accepts = jQuery.acceptData;	//指向一个方法，该方法用来判断一个对象是否能够通过data()方法绑定数据 
 
 Data.prototype = {
+	//用于获取要绑定数据的对象的id
 	key: function( owner ) {
 		// We can accept data for non-element nodes in modern browsers,
 		// but we should not, see #8335.
 		// Always return the key for a frozen object.
-		if ( !Data.accepts( owner ) ) {
+		if ( !Data.accepts( owner ) ) {	//如果对象不能绑定数据则返回0
 			return 0;
 		}
 
 		var descriptor = {},
 			// Check if the owner object already has a cache key
+			//unlock用于标志owner
 			unlock = owner[ this.expando ];
 
 		// If not, create one
+		//如果对象owner还没有被分配id，则给owner分配uid
 		if ( !unlock ) {
-			unlock = Data.uid++;
+			unlock = Data.uid++;  
 
 			// Secure it in a non-enumerable, non-writable property
+			//给owner定义this.expando属性，属性值为Data.uid++
 			try {
 				descriptor[ this.expando ] = { value: unlock };
-				Object.defineProperties( owner, descriptor );
+				Object.defineProperties( owner, descriptor );	//通过此种方法给owner定义的属性用for in无法遍历，且不可改写
 
 			// Support: Android<4
 			// Fallback to a less secure definition
@@ -3578,7 +3586,10 @@ Data.prototype = {
 			}
 		}
 
-		// Ensure the cache object
+		//Ensure the cache object
+		//给owner在this中分配数据缓存空间
+		//unlock用于标志被绑定数据的对象，Data对象中的缓存cache指向的对象中的属性unlock会指向一个对象，该对象保存了通过data()方法绑定的数据 
+		//因此对象通过data()方法绑定的数据没有保存在对象自身的属性上，而是保存在Data对象(data_user)的属性中(cache中)，二者通过expando和unlock标志进行关联
 		if ( !this.cache[ unlock ] ) {
 			this.cache[ unlock ] = {};
 		}
@@ -3590,8 +3601,8 @@ Data.prototype = {
 			// There may be an unlock assigned to this node,
 			// if there is no entry for this "owner", create one inline
 			// and set the unlock as though an owner entry had always existed
-			unlock = this.key( owner ),
-			cache = this.cache[ unlock ];
+			unlock = this.key( owner ),	  //获取到要绑定数据的对象的id
+			cache = this.cache[ unlock ];	//cache指向存放数据的缓存对象
 
 		// Handle: [ owner, key, value ] args
 		if ( typeof data === "string" ) {
@@ -3600,8 +3611,9 @@ Data.prototype = {
 		// Handle: [ owner, { properties } ] args
 		} else {
 			// Fresh assignments by object are shallow copied
-			if ( jQuery.isEmptyObject( cache ) ) {
-				jQuery.extend( this.cache[ unlock ], data );
+			//两种复制有什么区别吗????
+			if ( jQuery.isEmptyObject( cache ) ) {	//如果cache为空对象 
+				jQuery.extend( this.cache[ unlock ], data );	//将data浅复制到缓存对象中
 			// Otherwise, copy the properties one-by-one to the cache object
 			} else {
 				for ( prop in data ) {
@@ -3611,6 +3623,7 @@ Data.prototype = {
 		}
 		return cache;
 	},
+	//获取owner指定key的属性值，如果没有指定key，则返回所owner所有的属性构成的对象
 	get: function( owner, key ) {
 		// Either a valid cache is found, or will be created.
 		// New caches will be created and the unlock returned,
@@ -3621,6 +3634,7 @@ Data.prototype = {
 		return key === undefined ?
 			cache : cache[ key ];
 	},
+	//设置或获取值
 	access: function( owner, key, value ) {
 		var stored;
 		// In cases where either:
@@ -3655,24 +3669,25 @@ Data.prototype = {
 		// return the expected data based on which path was taken[*]
 		return value !== undefined ? value : key;
 	},
+	//
 	remove: function( owner, key ) {
 		var i, name, camel,
-			unlock = this.key( owner ),
-			cache = this.cache[ unlock ];
+			unlock = this.key( owner ),	//获取owner的id
+			cache = this.cache[ unlock ];	//获取owner的缓存对象
 
 		if ( key === undefined ) {
-			this.cache[ unlock ] = {};
-
+			this.cache[ unlock ] = {};	//如果不指定key则将owner的缓存对象引用指向空对象,即清空数据缓存
 		} else {
 			// Support array or space separated string of keys
-			if ( jQuery.isArray( key ) ) {
+			// 支持数组或以空格隔开的字符串形式的keys
+			if ( jQuery.isArray( key ) ) {	//如果keys为数组形式
 				// If "name" is an array of keys...
 				// When data is initially created, via ("key", "val") signature,
 				// keys will be converted to camelCase.
 				// Since there is no way to tell _how_ a key was added, remove
 				// both plain key and camelCase key. #12786
 				// This will only penalize the array argument path.
-				name = key.concat( key.map( jQuery.camelCase ) );
+				name = key.concat( key.map( jQuery.camelCase ) );	//将数组key中元素的都转化为驼峰形式
 			} else {
 				camel = jQuery.camelCase( key );
 				// Try the string as a key before any manipulation
@@ -3683,31 +3698,31 @@ Data.prototype = {
 					// Otherwise, create an array by matching non-whitespace
 					name = camel;
 					name = name in cache ?
-						[ name ] : ( name.match( rnotwhite ) || [] );
+						[ name ] : ( name.match( rnotwhite ) || [] );	//rnotwhite用于匹配非空格字符串
 				}
 			}
 
 			i = name.length;
 			while ( i-- ) {
-				delete cache[ name[ i ] ];
+				delete cache[ name[ i ] ];	//delete用于将引用赋予undefined
 			}
 		}
 	},
+	//判断owner是否已经绑定数据
 	hasData: function( owner ) {
 		return !jQuery.isEmptyObject(
 			this.cache[ owner[ this.expando ] ] || {}
 		);
 	},
+	//将owner的缓存数据的引用置于undefined
 	discard: function( owner ) {
-		if ( owner[ this.expando ] ) {
+		if ( owner[ this.expando ] ) {		//获取owner的id
 			delete this.cache[ owner[ this.expando ] ];
 		}
 	}
 };
 var data_priv = new Data();
-
 var data_user = new Data();
-
 
 
 //	Implementation Summary
@@ -3753,20 +3768,22 @@ function dataAttr( elem, key, data ) {
 }
 
 jQuery.extend({
+	//判断elem是否在data_user或者data_priv上绑定过数据
 	hasData: function( elem ) {
 		return data_user.hasData( elem ) || data_priv.hasData( elem );
 	},
-
+	//elem在data_user上设置或获取数据
 	data: function( elem, name, data ) {
 		return data_user.access( elem, name, data );
 	},
-
+	//删除elem在data_user上绑定的以name为键值得属性
 	removeData: function( elem, name ) {
 		data_user.remove( elem, name );
 	},
 
 	// TODO: Now that all calls to _data and _removeData have been replaced
 	// with direct calls to data_priv methods, these can be deprecated.
+	//既然对_data()方法和_removeData()方法的调用都会直接调用data_priv的相应方法，所以这两个方法可以被废除
 	_data: function( elem, name, data ) {
 		return data_priv.access( elem, name, data );
 	},
