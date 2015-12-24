@@ -3798,7 +3798,7 @@ jQuery.fn.extend({
 		var i, name, data,
 			elem = this[ 0 ],
 			attrs = elem && elem.attributes;
-
+ 
 		// Gets all values
 		//不传递参数的情况下
 		if ( key === undefined ) {
