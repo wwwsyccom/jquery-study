@@ -3473,7 +3473,7 @@ var access = jQuery.access = function( elems, fn, key, value, chainable, emptyGe
 		bulk = key == null;
 
 	// Sets many values
-	if ( jQuery.type( key ) === "object" ) {
+	if ( jQuery.type( key ) === "object" ) {	//如果key为普通对象
 		chainable = true;
 		for ( i in key ) {
 			jQuery.access( elems, fn, i, key[i], true, emptyGet, raw );
@@ -3483,11 +3483,11 @@ var access = jQuery.access = function( elems, fn, key, value, chainable, emptyGe
 	} else if ( value !== undefined ) {
 		chainable = true;
 
-		if ( !jQuery.isFunction( value ) ) {
+		if ( !jQuery.isFunction( value ) ) {	//如果value是函数
 			raw = true;
 		}
 
-		if ( bulk ) {
+		if ( bulk ) {	//如果key==null或undefined
 			// Bulk operations run against the entire set
 			if ( raw ) {
 				fn.call( elems, value );
@@ -3783,7 +3783,7 @@ jQuery.extend({
 
 	// TODO: Now that all calls to _data and _removeData have been replaced
 	// with direct calls to data_priv methods, these can be deprecated.
-	//既然对_data()方法和_removeData()方法的调用都会直接调用data_priv的相应方法，所以这两个方法可以被废除
+	//既然对_data()方法和_removeData()方法的调用都会直接调用data_priv的相应方法，所以这两个方法可以被废除 
 	_data: function( elem, name, data ) {
 		return data_priv.access( elem, name, data );
 	},
@@ -3792,7 +3792,7 @@ jQuery.extend({
 		data_priv.remove( elem, name );
 	}
 });
-
+//下次分析此处...............
 jQuery.fn.extend({
 	data: function( key, value ) {
 		var i, name, data,
@@ -3800,15 +3800,14 @@ jQuery.fn.extend({
 			attrs = elem && elem.attributes;
 
 		// Gets all values
+		//不传递参数的情况下
 		if ( key === undefined ) {
 			if ( this.length ) {
-				globalVar = data_user;
-				data = data_user.get( elem );
+				data = data_user.get( elem );	//data为elem在data_user上绑定的数据对象
 
 				if ( elem.nodeType === 1 && !data_priv.get( elem, "hasDataAttrs" ) ) {
 					i = attrs.length;
 					while ( i-- ) {
-
 						// Support: IE11+
 						// The attrs elements can be null (#14894)
 						if ( attrs[ i ] ) {
