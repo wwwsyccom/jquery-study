@@ -11,7 +11,15 @@
  *
  * Date: 2015-04-28T16:01Z
  */
-
+function print(obj){
+	if(obj instanceof Object){
+		for(var i in obj){
+			console.log(i+'|'+obj[i]);
+		}
+	}else{
+		console.log(obj);
+	}
+}
 (function( global, factory ) {
 
 	if ( typeof module === "object" && typeof module.exports === "object" ) {
@@ -3434,7 +3442,7 @@ function completed() {
 	window.removeEventListener( "load", completed, false );
 	jQuery.ready();
 }
-
+//此处在加载后即执行
 jQuery.ready.promise = function( obj ) {
 	if ( !readyList ) {
 
@@ -3460,7 +3468,7 @@ jQuery.ready.promise = function( obj ) {
 };
 
 // Kick off the DOM ready check even if the user does not
-jQuery.ready.promise();
+jQuery.ready.promise();	
 
 
 
@@ -7929,7 +7937,6 @@ jQuery.extend({
 
 		// Force options to be an object
 		options = options || {};
-
 		var transport,
 			// URL without anti-cache param
 			cacheURL,

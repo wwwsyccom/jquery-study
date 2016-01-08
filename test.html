@@ -6,10 +6,38 @@
 		<script src="jquery-2.1.4.js" type="text/javascript" charset="utf-8"></script>
 	</head>
 	<body>
-		<div id="div1">999</div>
-		<div id="div2">888</div>
-		<script>
-		alert(undefined == null);
-		</script>
-	</body>
+		<script type="text/javascript">
+		// 定义主题
+		/*
+		var subject = (function(){
+		    var dfd = $.Deferred();
+		    
+		    return dfd;
+		})();
+		
+		// 两个观察者
+		var fn1 = function(content){
+		    console.log("fn1: " + content );
+		}
+		
+		var fn2 = function(content){
+		    console.log("fn2: " + content );
+		}
+		
+		// 注册观察者
+		$.when( subject )
+		.done( fn1 )
+		.done( fn2 );
+		
+		// 发布内容
+		subject.resolve("Alice");
+		*/
+		alert(document.readyState);
+		/*
+		document.onreadystatechange = subSomething;//当页面加载状态改变的时候执行这个方法.
+		function subSomething(){
+			console.log(document.readyState);
+		}
+		*/
+		</script>	</body>
 </html>
