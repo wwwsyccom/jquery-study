@@ -3545,8 +3545,8 @@ function Data() {
 			return {};
 		}
 	});
-
-	this.expando = jQuery.expando + Data.uid++;	//给新创建的对象设置expando属性,其中expando用于标志jQuery，uid用于标志data_user的id,所以expando用于标志Data对象的id
+	//给新创建的对象设置expando属性,其中expando用于标志jQuery，uid用于标志data_user的id,所以expando用于标志Data对象的id
+	this.expando = jQuery.expando + Data.uid++;	
 }
 
 Data.uid = 1;
@@ -3737,7 +3737,7 @@ var data_user = new Data();
 
 var rbrace = /^(?:\{[\w\W]*\}|\[[\w\W]*\])$/,
 	rmultiDash = /([A-Z])/g;
-
+// 获取元素elem的html5 data-key 属性值
 function dataAttr( elem, key, data ) {
 	var name;
 
@@ -3753,8 +3753,8 @@ function dataAttr( elem, key, data ) {
 					data === "false" ? false :
 					data === "null" ? null :
 					// Only convert to a number if it doesn't change the string
-					+data + "" === data ? +data :
-					rbrace.test( data ) ? jQuery.parseJSON( data ) :
+					+data + "" === data ? +data :	// data为数字形式时 +data+'' === data 为真
+					rbrace.test( data ) ? jQuery.parseJSON( data ) :	//如果data为对象字面量格式
 					data;
 			} catch( e ) {}
 
@@ -3766,7 +3766,6 @@ function dataAttr( elem, key, data ) {
 	}
 	return data;
 }
-
 jQuery.extend({
 	//判断elem是否在data_user或者data_priv上绑定过数据
 	hasData: function( elem ) {
@@ -3800,7 +3799,7 @@ jQuery.fn.extend({
 			attrs = elem && elem.attributes;
  
 		// Gets all values
-		//不传递参数的情况下
+		//不传递参数的情况下,获取所有值
 		if ( key === undefined ) {
 			if ( this.length ) {
 				data = data_user.get( elem );	//data为elem在data_user上绑定的数据对象

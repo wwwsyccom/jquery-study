@@ -6,10 +6,11 @@
 		<script src="jquery-2.1.4.js" type="text/javascript" charset="utf-8"></script>
 	</head>
 	<body>
-		<div id="div1">999</div>
+		<div data-kFk="100" id="div1">999</div>
 		<div id="div2">888</div>
 		<script>
-		alert(undefined == null);
+			var div1 = document.getElementById('div1');
+			alert(dataAttrGlobal(div1,'kFk'));
 		</script>
 	</body>
 </html>
