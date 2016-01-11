@@ -3438,6 +3438,7 @@ jQuery.extend({
  * The ready event handler and self cleanup method
  */
 function completed() {
+	console.log('completed...');
 	document.removeEventListener( "DOMContentLoaded", completed, false );
 	window.removeEventListener( "load", completed, false );
 	jQuery.ready();
@@ -3447,7 +3448,6 @@ jQuery.ready.promise = function( obj ) {
 	if ( !readyList ) {
 
 		readyList = jQuery.Deferred();
-
 		// Catch cases where $(document).ready() is called after the browser event has already occurred.
 		// We once tried to use readyState "interactive" here, but it caused issues like the one
 		// discovered by ChrisS here: http://bugs.jquery.com/ticket/12282#comment:15
