@@ -3,14 +3,18 @@
 	<head>
 		<meta charset="utf-8">
 		<title></title>
-		<script src="jquery-2.1.4.js" type="text/javascript" charset="utf-8"></script>
+		<script src="jquery.js" type="text/javascript" charset="utf-8"></script>
 	</head>
 	<body>
 		<div data-kFk="100" id="div1">999</div>
 		<div id="div2">888</div>
 		<script>
-		var arr = ['jj','oo','aa'];
-		alert(arr.indexOf('oo'));
+		function cb() {
+		    alert('success');
+		}
+		var deferred = $.Deferred();
+		deferred.done(cb);
+		    deferred.resolve();
 		</script>
 	</body>
 </html>
