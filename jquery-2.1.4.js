@@ -3245,33 +3245,42 @@ jQuery.extend({
 	Deferred: function( func ) {
 		var tuples = [
 				// action, add listener, listener list, final state
+				//
 				[ "resolve", "done", jQuery.Callbacks("once memory"), "resolved" ],
 				[ "reject", "fail", jQuery.Callbacks("once memory"), "rejected" ],
 				[ "notify", "progress", jQuery.Callbacks("memory") ]
 			],
 			state = "pending",
-			promise = {
+			promise = {	//promise的作用是给deferred提供进一步的封装，derferred.promise()只能进行添加监听函数的操作，而不能通过promise来调用resolve()、reject()进行触发
 				state: function() {
 					return state;
 				},
 				always: function() {
-					deferred.done( arguments ).fail( arguments );
+					deferred.done( arguments ).fail( arguments );	//deferred.done指向了Callbacks.add，因为Callbacks.add()方法返回的是this，所以done()方法返回的是deferred,所以可以使用连锁式调用
 					return this;
 				},
+				//then方法返回的是新的deferred的promise对象
+				//可以用链式的方式通过then方法给deferred对象添加监听函数，如$.Deferred().then().done()
+				//then方法会给的deferred对象添加包装后的监听函数，then方法会返回一个新的promise对象，当调用deferred.resole()来
+				//触发监听函数时，因为监听函数时被包装过的，监听函数会先执行绑定的监听函数，然后执行新的promise对象上绑定的监听函数，这样达到链式调用的效果 
 				then: function( /* fnDone, fnFail, fnProgress */ ) {
 					var fns = arguments;
-					return jQuery.Deferred(function( newDefer ) {
+					return jQuery.Deferred(function( newDefer ) { //函数中对新的deferred对象进行加工
+						//遍历三个由Callbacks构成的tuples
 						jQuery.each( tuples, function( i, tuple ) {
+							//获取then方法中传递的参数,赋值给fn
 							var fn = jQuery.isFunction( fns[ i ] ) && fns[ i ];
 							// deferred[ done | fail | progress ] for forwarding actions to newDefer
+							//给旧的deferred对象添加监听函数
 							deferred[ tuple[1] ](function() {
 								var returned = fn && fn.apply( this, arguments );
-								if ( returned && jQuery.isFunction( returned.promise ) ) {
+								if ( returned && jQuery.isFunction( returned.promise ) ) {//判断监听函数的返回值，如果返回值是deferred对象
 									returned.promise()
 										.done( newDefer.resolve )
 										.fail( newDefer.reject )
 										.progress( newDefer.notify );
-								} else {
+								} else {	
+									//如果监听函数的返回值不是deferred对象,则执行相应的newDefer.resolveWith, newDefer.regetWith 
 									newDefer[ tuple[ 0 ] + "With" ]( this === promise ? newDefer.promise() : this, fn ? [ returned ] : arguments );
 								}
 							});
@@ -3288,6 +3297,7 @@ jQuery.extend({
 			deferred = {};
 
 		// Keep pipe for back-compat
+		//保留pipe来向后兼容
 		promise.pipe = promise.then;
 
 		// Add list-specific methods
@@ -3296,18 +3306,21 @@ jQuery.extend({
 				stateString = tuple[ 3 ];	//resolved,rejected
 
 			// promise[ done | fail | progress ] = list.add
+			//使promise.done, promise.fail, promise.progress 分别指向三个Callbacks的add方法
 			promise[ tuple[ 1 ] ] = list.add;
 			// Handle state
-			if ( stateString ) {
-				list.add(function() {
+			if ( stateString ) {	
+				list.add(function() {	//给Callbacks添加改变state状态的函数,当fire时,Callbacks的状态会发生相应的改变
 					// state = [ resolved | rejected ]
 					state = stateString;
 
 				// [ reject_list | resolve_list ].disable; progress_list.lock
+				//??????????????????
 				}, tuples[ i ^ 1 ][ 2 ].disable, tuples[ 2 ][ 2 ].lock );
 			}
 
 			// deferred[ resolve | reject | notify ]
+			//当调用deferred.resolve, deferred.reject, deferred.notify 时会调用相应的三个Callbacks的fireWith方法
 			deferred[ tuple[0] ] = function() {
 				deferred[ tuple[0] + "With" ]( this === deferred ? promise : this, arguments );
 				return this;
@@ -3316,6 +3329,7 @@ jQuery.extend({
 		});
 
 		// Make the deferred a promise
+		// 使deferred具有promise的属性函数
 		promise.promise( deferred );
 
 		// Call given func if any
