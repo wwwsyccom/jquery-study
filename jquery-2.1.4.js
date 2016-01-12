@@ -3096,7 +3096,7 @@ jQuery.Callbacks = function( options ) {
 		// Actual callback list
 		list = [],
 		// Stack of fire calls for repeatable lists
-		stack = !options.once && [],
+		stack = !options.once && [],	//在once==false时有效，存储在firing过程中又调用fire的函数参数
 		// Fire callbacks
 		fire = function( data ) {
 			memory = options.memory && data;
@@ -3113,11 +3113,11 @@ jQuery.Callbacks = function( options ) {
 			}
 			firing = false;
 			if ( list ) {
-				if ( stack ) {
+				if ( stack ) {	// once为false时执行,如果在firing过程中又调用过了fire，则会将调用参数放到stack中
 					if ( stack.length ) {
 						fire( stack.shift() );
 					}
-				} else if ( memory ) {
+				} else if ( memory ) {	//once为true且memory为true时
 					list = [];
 				} else {
 					self.disable();
@@ -3138,7 +3138,7 @@ jQuery.Callbacks = function( options ) {
 								if ( !options.unique || !self.has( arg ) ) {
 									list.push( arg );
 								}
-							} else if ( arg && arg.length && type !== "string" ) {
+							} else if ( arg && arg.length && type !== "string" ) {	//参数为数组形式时
 								// Inspect recursively
 								add( arg );
 							}
@@ -3146,11 +3146,11 @@ jQuery.Callbacks = function( options ) {
 					})( arguments );
 					// Do we need to add the callbacks to the
 					// current firing batch?
-					if ( firing ) {
+					if ( firing ) {	//有可能是在firing的过程中添加的
 						firingLength = list.length;
 					// With memory, if we're not firing then
 					// we should call right away
-					} else if ( memory ) {
+					} else if ( memory ) {	//memory=true时，添加后即刻执行 
 						firingStart = start;
 						fire( memory );
 					}
@@ -3165,8 +3165,8 @@ jQuery.Callbacks = function( options ) {
 						while ( ( index = jQuery.inArray( arg, list, index ) ) > -1 ) {
 							list.splice( index, 1 );
 							// Handle firing indexes
-							if ( firing ) {
-								if ( index <= firingLength ) {
+							if ( firing ) {	//有可能是在firing过程中删除 
+								if ( index <= firingLength ) {	//这里有可能不执行吗？???????
 									firingLength--;
 								}
 								if ( index <= firingIndex ) {
@@ -3190,24 +3190,26 @@ jQuery.Callbacks = function( options ) {
 				return this;
 			},
 			// Have the list do nothing anymore
+			//disable后无法添加， 执行
 			disable: function() {
 				list = stack = memory = undefined;
 				return this;
 			},
 			// Is it disabled?
+			//初始状态下list=[]
 			disabled: function() {
 				return !list;
 			},
 			// Lock the list in its current state
 			lock: function() {
 				stack = undefined;
-				if ( !memory ) {
+				if ( !memory ) {	
 					self.disable();
 				}
 				return this;
 			},
 			// Is it locked?
-			locked: function() {
+			locked: function() {	//disabled肯定locked
 				return !stack;
 			},
 			// Call all callbacks with the given context and arguments
@@ -3215,7 +3217,7 @@ jQuery.Callbacks = function( options ) {
 				if ( list && ( !fired || stack ) ) {
 					args = args || [];
 					args = [ context, args.slice ? args.slice() : args ];
-					if ( firing ) {
+					if ( firing ) {	//如果是在firing过程中调用 
 						stack.push( args );
 					} else {
 						fire( args );
@@ -3438,7 +3440,6 @@ jQuery.extend({
  * The ready event handler and self cleanup method
  */
 function completed() {
-	console.log('completed...');
 	document.removeEventListener( "DOMContentLoaded", completed, false );
 	window.removeEventListener( "load", completed, false );
 	jQuery.ready();
@@ -3553,8 +3554,8 @@ function Data() {
 			return {};
 		}
 	});
-
-	this.expando = jQuery.expando + Data.uid++;	//给新创建的对象设置expando属性,其中expando用于标志jQuery，uid用于标志data_user的id,所以expando用于标志Data对象的id
+	//给新创建的对象设置expando属性,其中expando用于标志jQuery，uid用于标志data_user的id,所以expando用于标志Data对象的id
+	this.expando = jQuery.expando + Data.uid++;	
 }
 
 Data.uid = 1;
@@ -3745,7 +3746,7 @@ var data_user = new Data();
 
 var rbrace = /^(?:\{[\w\W]*\}|\[[\w\W]*\])$/,
 	rmultiDash = /([A-Z])/g;
-
+// 获取元素elem的html5 data-key 属性值
 function dataAttr( elem, key, data ) {
 	var name;
 
@@ -3761,8 +3762,8 @@ function dataAttr( elem, key, data ) {
 					data === "false" ? false :
 					data === "null" ? null :
 					// Only convert to a number if it doesn't change the string
-					+data + "" === data ? +data :
-					rbrace.test( data ) ? jQuery.parseJSON( data ) :
+					+data + "" === data ? +data :	// data为数字形式时 +data+'' === data 为真
+					rbrace.test( data ) ? jQuery.parseJSON( data ) :	//如果data为对象字面量格式
 					data;
 			} catch( e ) {}
 
@@ -3774,7 +3775,6 @@ function dataAttr( elem, key, data ) {
 	}
 	return data;
 }
-
 jQuery.extend({
 	//判断elem是否在data_user或者data_priv上绑定过数据
 	hasData: function( elem ) {
@@ -3808,7 +3808,7 @@ jQuery.fn.extend({
 			attrs = elem && elem.attributes;
  
 		// Gets all values
-		//不传递参数的情况下
+		//不传递参数的情况下,获取所有值
 		if ( key === undefined ) {
 			if ( this.length ) {
 				data = data_user.get( elem );	//data为elem在data_user上绑定的数据对象

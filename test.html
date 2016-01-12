@@ -7,36 +7,18 @@
 	</head>
 	<body>
 		<script type="text/javascript">
-		// 定义主题
-		/*
-		var subject = (function(){
-		    var dfd = $.Deferred();
-		    
-		    return dfd;
-		})();
-		
-		// 两个观察者
-		var fn1 = function(content){
-		    console.log("fn1: " + content );
-		}
-		
-		var fn2 = function(content){
-		    console.log("fn2: " + content );
-		}
-		
-		// 注册观察者
-		$.when( subject )
-		.done( fn1 )
-		.done( fn2 );
-		
-		// 发布内容
-		subject.resolve("Alice");
-		*/
-		/*
-		document.onreadystatechange = subSomething;//当页面加载状态改变的时候执行这个方法.
-		function subSomething(){
-			console.log(document.readyState);
-		}
-		*/
+		var d1 = $.Deferred();
+var d2 = $.Deferred();
+var d3 = $.Deferred();
+ 
+$.when( d1, d2, d3 ).done(function ( v1, v2, v3 ) {
+    console.log( v1 ); // v1 is undefined
+    console.log( v2 ); // v2 is "abc"
+    console.log( v3 ); // v3 is an array [ 1, 2, 3, 4, 5 ]
+});
+ 
+d1.resolve();
+d2.resolve( "abc" );
+d3.resolve( 1, 2, 3, 4, 5 );
 		</script>	</body>
 </html>
